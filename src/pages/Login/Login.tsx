@@ -1,5 +1,6 @@
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
+import { Input } from 'src/components'
 import { getRules } from 'src/utils/rules'
 
 interface FormData {
@@ -31,25 +32,25 @@ function Login() {
           <div className='lg:col-span-2 lg:col-start-4'>
             <form className='rounded bg-white p-10 shadow-sm' onSubmit={onSubmit} noValidate>
               <div className='text-2xl'>Đăng nhập</div>
-              <div className='mt-8'>
-                <input
-                  type='email'
-                  className='w-full rounded-sm border border-gray-300 p-3 outline-none focus:border-gray-500 focus:shadow-sm'
-                  placeholder='Email'
-                  {...register('email', rules.email)}
-                />
-                <div className='mt-1 min-h-[1.25rem] text-sm text-red-600'>{errors.email?.message}</div>
-              </div>
-              <div className='mt-2'>
-                <input
-                  type='password'
-                  className='w-full rounded-sm border border-gray-300 p-3 outline-none focus:border-gray-500 focus:shadow-sm'
-                  placeholder='Password'
-                  autoComplete='on'
-                  {...register('password', rules.password)}
-                />
-                <div className='mt-1 min-h-[1.25rem] text-sm text-red-600'>{errors.password?.message}</div>
-              </div>
+              <Input
+                type='email'
+                name='email'
+                placeholder='Email'
+                wrapperClassName='mt-8'
+                errorMessage={errors.email?.message}
+                rules={rules.email}
+                register={register}
+              />
+              <Input
+                type='password'
+                name='password'
+                placeholder='Password'
+                wrapperClassName='mt-2'
+                errorMessage={errors.password?.message}
+                rules={rules.password}
+                autoComplete='on'
+                register={register}
+              />
               <div className='mt-3'>
                 <button
                   type='submit'
