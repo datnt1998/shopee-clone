@@ -1,26 +1,36 @@
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
-import { Input } from 'src/components'
-import { getRules } from 'src/utils/rules'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { useMutation } from '@tanstack/react-query'
+import { omit } from 'lodash'
 
-interface FormData {
-  email: string
-  password: string
-  confirmPassword: string
-}
+import { Input } from 'src/components'
+import { IRegisterForm, schema } from 'src/utils/rules'
+import { registerAccount } from 'src/apis/auth.api'
+
+type FormData = IRegisterForm
 
 function Register() {
   const {
     register,
     handleSubmit,
-    getValues,
     formState: { errors }
-  } = useForm<FormData>()
+  } = useForm<FormData>({
+    resolver: yupResolver(schema)
+  })
 
-  const rules = getRules(getValues)
+  const registerAccountMutation = useMutation({
+    mutationFn: (body: Omit<FormData, 'confirmPassword'>) =>
+      registerAccount(body)
+  })
 
   const onSubmit = handleSubmit((data) => {
-    console.log(data)
+    const body = omit(data, ['confirmPassword'])
+    registerAccountMutation.mutate(body, {
+      onSuccess: (data) => {
+        console.log(data)
+      }
+    })
   })
 
   console.log(errors)
@@ -30,7 +40,11 @@ function Register() {
       <div className='container'>
         <div className='grid grid-cols-1 py-12 lg:grid-cols-5 lg:py-32 lg:pr-10'>
           <div className='lg:col-span-2 lg:col-start-4'>
-            <form className='rounded bg-white p-10 shadow-sm' onSubmit={onSubmit} noValidate>
+            <form
+              className='rounded bg-white p-10 shadow-sm'
+              onSubmit={onSubmit}
+              noValidate
+            >
               <div className='text-2xl'>Đăng ký</div>
               <Input
                 type='email'
@@ -38,7 +52,6 @@ function Register() {
                 placeholder='Email'
                 wrapperClassName='mt-8'
                 errorMessage={errors.email?.message}
-                rules={rules.email}
                 register={register}
               />
               <Input
@@ -47,7 +60,6 @@ function Register() {
                 placeholder='Password'
                 wrapperClassName='mt-2'
                 errorMessage={errors.password?.message}
-                rules={rules.password}
                 autoComplete='on'
                 register={register}
               />
@@ -57,7 +69,6 @@ function Register() {
                 placeholder='Confirm Password'
                 wrapperClassName='mt-2'
                 errorMessage={errors.confirmPassword?.message}
-                rules={rules.confirmPassword}
                 autoComplete='on'
                 register={register}
               />

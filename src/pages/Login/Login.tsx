@@ -1,12 +1,11 @@
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
-import { Input } from 'src/components'
-import { getRules } from 'src/utils/rules'
+import { yupResolver } from '@hookform/resolvers/yup'
 
-interface FormData {
-  email: string
-  password: string
-}
+import { Input } from 'src/components'
+import { ILoginForm, loginSchema } from 'src/utils/rules'
+
+type FormData = ILoginForm
 
 function Login() {
   const {
@@ -14,10 +13,8 @@ function Login() {
     handleSubmit,
     formState: { errors }
   } = useForm<FormData>({
-    mode: 'onChange'
+    resolver: yupResolver(loginSchema)
   })
-
-  const rules = getRules()
 
   const onSubmit = handleSubmit((data) => {
     console.log(data)
@@ -30,7 +27,11 @@ function Login() {
       <div className='container'>
         <div className='grid grid-cols-1 py-12 lg:grid-cols-5 lg:py-32 lg:pr-10'>
           <div className='lg:col-span-2 lg:col-start-4'>
-            <form className='rounded bg-white p-10 shadow-sm' onSubmit={onSubmit} noValidate>
+            <form
+              className='rounded bg-white p-10 shadow-sm'
+              onSubmit={onSubmit}
+              noValidate
+            >
               <div className='text-2xl'>Đăng nhập</div>
               <Input
                 type='email'
@@ -38,7 +39,6 @@ function Login() {
                 placeholder='Email'
                 wrapperClassName='mt-8'
                 errorMessage={errors.email?.message}
-                rules={rules.email}
                 register={register}
               />
               <Input
@@ -47,7 +47,6 @@ function Login() {
                 placeholder='Password'
                 wrapperClassName='mt-2'
                 errorMessage={errors.password?.message}
-                rules={rules.password}
                 autoComplete='on'
                 register={register}
               />
