@@ -7,6 +7,8 @@ import { omit } from 'lodash'
 import { Input } from 'src/components'
 import { IRegisterForm, schema } from 'src/utils/rules'
 import { registerAccount } from 'src/apis/auth.api'
+import { isAxiosUnprocessableEntityError } from 'src/utils/utils'
+import { SuccessResponse } from 'src/types/utils.types'
 
 type FormData = IRegisterForm
 
@@ -14,6 +16,7 @@ function Register() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors }
   } = useForm<FormData>({
     resolver: yupResolver(schema)
@@ -29,11 +32,27 @@ function Register() {
     registerAccountMutation.mutate(body, {
       onSuccess: (data) => {
         console.log(data)
+      },
+      onError: (error) => {
+        if (
+          isAxiosUnprocessableEntityError<
+            SuccessResponse<Omit<FormData, 'confirmPassword'>>
+          >(error)
+        ) {
+          const formError = error.response?.data.data
+          if (formError) {
+            Object.keys(formError).forEach((key) => {
+              setError(key as keyof Omit<FormData, 'confirmPassword'>, {
+                message:
+                  formError[key as keyof Omit<FormData, 'confirmPassword'>],
+                type: 'Server'
+              })
+            })
+          }
+        }
       }
     })
   })
-
-  console.log(errors)
 
   return (
     <div className='bg-orange'>
