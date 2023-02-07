@@ -1,5 +1,6 @@
+import { useContext } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useMutation } from '@tanstack/react-query'
 import { omit } from 'lodash'
@@ -8,11 +9,16 @@ import { Input } from 'src/components'
 import { IRegisterForm, schema } from 'src/utils/rules'
 import { registerAccount } from 'src/apis/auth.api'
 import { isAxiosUnprocessableEntityError } from 'src/utils/utils'
-import { SuccessResponse } from 'src/types/utils.types'
+import { ErrorResponse } from 'src/types/utils.types'
+import { AppContext } from 'src/contexts/app.context'
+import Button from 'src/components/Button'
 
 type FormData = IRegisterForm
 
 function Register() {
+  const { setIsAuthenticated, setProfile } = useContext(AppContext)
+  const navigate = useNavigate()
+
   const {
     register,
     handleSubmit,
@@ -31,12 +37,14 @@ function Register() {
     const body = omit(data, ['confirmPassword'])
     registerAccountMutation.mutate(body, {
       onSuccess: (data) => {
-        console.log(data)
+        setIsAuthenticated(true)
+        setProfile(data.data.data.user)
+        navigate('/')
       },
       onError: (error) => {
         if (
           isAxiosUnprocessableEntityError<
-            SuccessResponse<Omit<FormData, 'confirmPassword'>>
+            ErrorResponse<Omit<FormData, 'confirmPassword'>>
           >(error)
         ) {
           const formError = error.response?.data.data
@@ -92,12 +100,14 @@ function Register() {
                 register={register}
               />
               <div className='mt-3'>
-                <button
+                <Button
                   type='submit'
                   className='flex w-full items-center justify-center rounded-sm bg-red-500 py-4 px-2 text-sm uppercase text-white hover:bg-red-600'
+                  isLoading={registerAccountMutation.isLoading}
+                  disabled={registerAccountMutation.isLoading}
                 >
                   Đăng ký
-                </button>
+                </Button>
               </div>
               <div className='mt-8 flex items-center justify-center'>
                 <span className='text-gray-400'>Bạn đã có tài khoản?</span>
